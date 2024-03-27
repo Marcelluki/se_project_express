@@ -6,7 +6,6 @@ const getUsers = (req, res) => {
   User.find({})
     .then((users) => {
       res.status(200).send(users);
-      res.send(users);
     })
     .catch((err) => {
       console.error(err);
@@ -38,7 +37,11 @@ const getUser = (req, res) => {
 
   User.findById(userId)
     .then((user) => {
-      res.status(200).send(user);
+      console.log(user);
+      if (user) {
+        return res.status(200).send(user);
+      }
+      throw new Error("Error");
     })
     .catch((err) => {
       console.error(err);
