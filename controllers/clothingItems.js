@@ -1,4 +1,11 @@
 const ClothingItem = require("../models/clothingItem");
+const {
+  INTERNAL_SERVER_ERROR,
+  BAD_REQUEST_ERROR,
+  NOT_FOUND_ERROR,
+} = require("../utils/errors");
+
+// Create Clothing Item
 
 const createItem = (req, res) => {
   const { name, weather, imageUrl } = req.body;
@@ -10,20 +17,24 @@ const createItem = (req, res) => {
     })
     .catch((err) => {
       if (err.name === "ValidationError") {
-        return res.status(400).send({ message: err.message });
+        return res.status(BAD_REQUEST_ERROR).send({ message: err.message });
       } else if (!name || !weather || !imageUrl) {
-        return res.status(400).json({ message: "Missing required fields" });
+        return res
+          .status(BAD_REQUEST_ERROR)
+          .json({ message: "Missing required fields" });
       }
-      res.status(500).send({ message: err.message });
+      res.status(INTERNAL_SERVER_ERROR).send({ message: err.message });
     });
 };
+
+// GET Clothing Items
 
 const getClothingItems = (req, res) => {
   ClothingItem.find({})
     .then((items) => {
       if (!items) {
         // Item no longer exists in the database
-        return res.status(404).send({ message: "Item not found" });
+        return res.status(NOT_FOUND_ERROR).send({ message: "Item not found" });
       }
       res.status(200).send(items);
     })
@@ -32,9 +43,11 @@ const getClothingItems = (req, res) => {
       if (err.name === "DocumentNotFoundError") {
         res.status(200).send({ message: err.message });
       }
-      return res.status(500).send({ message: err.message });
+      return res.status(INTERNAL_SERVER_ERROR).send({ message: err.message });
     });
 };
+
+// Like Clothing Item
 
 const likeClothingItem = (req, res) => {
   const userId = req.user._id;
@@ -45,23 +58,26 @@ const likeClothingItem = (req, res) => {
     { $addToSet: { likes: userId } }, // add _id to the array if it's not there yet
     { new: true },
   )
-    .orFail(() => {
-      const error = new Error("DocumentNotFoundError");
-      err.statusCode = 404;
-      throw error;
+    .orFail()
+    .then((item) => {
+      if (!item) {
+        return res.status(NOT_FOUND_ERROR).send({ message: "item Not Found" });
+      }
+      res.status(200).send({ data: item });
     })
-    .then((item) => res.status(200).send({ data: item }))
     .catch((err) => {
       if (err.name === "DocumentNotFoundError") {
-        res.status(404).send({ message: err.message });
+        return res.status(NOT_FOUND_ERROR).send({ message: err.message });
       }
       if (err.name === "CastError") {
-        res.status(400).send({ message: err.message });
+        return res.status(BAD_REQUEST_ERROR).send({ message: err.message });
       }
       console.error(err);
-      return res.status(500).send({ message: err.message });
+      return res.status(INTERNAL_SERVER_ERROR).send({ message: err.message });
     });
 };
+
+// Unlike Clothing Item
 
 const unLikeClothingItem = (req, res) => {
   const userId = req.user._id;
@@ -72,24 +88,27 @@ const unLikeClothingItem = (req, res) => {
     { $pull: { likes: userId } }, // add _id to the array if it's not there yet
     { new: true },
   )
-    .orFail(() => {
-      const error = new Error("DocumentNotFoundError");
-      err.statusCode = 404;
-      throw error;
+    .orFail()
+    .then((item) => {
+      if (!item) {
+        return res.status(404).send({ message: "item Not Found" });
+      }
+      res.status(200).send({ data: item });
     })
-    .then((item) => res.status(200).send({ data: item }))
     .catch((err) => {
       console.error(err);
       if (err.name === "CastError") {
-        res.status(400).send({ message: err.message });
+        return res.status(400).send({ message: err.message });
       }
       if (err.name === "DocumentNotFoundError") {
-        res.status(404).send({ message: err.message });
+        return res.status(404).send({ message: err.message });
       }
 
       return res.status(500).send({ message: err.message });
     });
 };
+
+// DELETE Clothing Item
 
 const deleteClothingItem = (req, res) => {
   const { itemId } = req.params;
@@ -101,16 +120,16 @@ const deleteClothingItem = (req, res) => {
         // Item no longer exists in the database
         return res.status(404).send({ message: "Item not found" });
       }
-      res.status(200).send(item);
+      return res.status(200).send(item);
     })
     .catch((err) => {
+      console.error(err);
       if (err.name === "DocumentNotFoundError") {
         res.status(404).send({ message: err.message });
       }
       if (err.name == "CastError") {
         return res.status(400).send({ message: err.message });
       }
-      console.error(err);
       return res.status(500).send({ message: err.message });
     });
   // ClothingItem.exists({ _id: itemId }).then((itemExists) => {
