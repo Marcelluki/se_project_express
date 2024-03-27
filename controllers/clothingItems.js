@@ -91,20 +91,20 @@ const unLikeClothingItem = (req, res) => {
     .orFail()
     .then((item) => {
       if (!item) {
-        return res.status(404).send({ message: "item Not Found" });
+        return res.status(NOT_FOUND_ERROR).send({ message: "item Not Found" });
       }
       res.status(200).send({ data: item });
     })
     .catch((err) => {
       console.error(err);
       if (err.name === "CastError") {
-        return res.status(400).send({ message: err.message });
+        return res.status(BAD_REQUEST_ERROR).send({ message: err.message });
       }
       if (err.name === "DocumentNotFoundError") {
-        return res.status(404).send({ message: err.message });
+        return res.status(NOT_FOUND_ERROR).send({ message: err.message });
       }
 
-      return res.status(500).send({ message: err.message });
+      return res.status(INTERNAL_SERVER_ERROR).send({ message: err.message });
     });
 };
 
@@ -118,19 +118,19 @@ const deleteClothingItem = (req, res) => {
     .then((item) => {
       if (!item) {
         // Item no longer exists in the database
-        return res.status(404).send({ message: "Item not found" });
+        return res.status(NOT_FOUND_ERROR).send({ message: "Item not found" });
       }
       return res.status(200).send(item);
     })
     .catch((err) => {
       console.error(err);
       if (err.name === "DocumentNotFoundError") {
-        res.status(404).send({ message: err.message });
+        res.status(NOT_FOUND_ERROR).send({ message: err.message });
       }
       if (err.name == "CastError") {
-        return res.status(400).send({ message: err.message });
+        return res.status(BAD_REQUEST_ERROR).send({ message: err.message });
       }
-      return res.status(500).send({ message: err.message });
+      return res.status(INTERNAL_SERVER_ERROR).send({ message: err.message });
     });
   // ClothingItem.exists({ _id: itemId }).then((itemExists) => {
   //   if (!itemExists) {
