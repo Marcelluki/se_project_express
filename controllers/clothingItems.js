@@ -17,13 +17,11 @@ const createItem = (req, res) => {
     })
     .catch((err) => {
       if (err.name === "ValidationError") {
-        return res.status(BAD_REQUEST_ERROR).send({ message: err.message });
-      } else if (!name || !weather || !imageUrl) {
-        return res
-          .status(BAD_REQUEST_ERROR)
-          .json({ message: "Missing required fields" });
+        return res.status(BAD_REQUEST_ERROR).send({ message: "Invalid data" });
       }
-      res.status(INTERNAL_SERVER_ERROR).send({ message: err.message });
+      res
+        .status(INTERNAL_SERVER_ERROR)
+        .send({ message: "An error has occurred on the server." });
     });
 };
 
@@ -32,18 +30,18 @@ const createItem = (req, res) => {
 const getClothingItems = (req, res) => {
   ClothingItem.find({})
     .then((items) => {
-      if (!items) {
-        // Item no longer exists in the database
-        return res.status(NOT_FOUND_ERROR).send({ message: "Item not found" });
-      }
+      // if (!items) {
+      //   // Item no longer exists in the database
+      //   return res.status(NOT_FOUND_ERROR).send({ message: "Item not found" });
+      // }
       res.status(200).send(items);
     })
     .catch((err) => {
       console.error(err);
-      if (err.name === "DocumentNotFoundError") {
-        res.status(200).send({ message: err.message });
-      }
-      return res.status(INTERNAL_SERVER_ERROR).send({ message: err.message });
+
+      return res
+        .status(INTERNAL_SERVER_ERROR)
+        .send({ message: "An error has occurred on the server." });
     });
 };
 
@@ -60,9 +58,6 @@ const likeClothingItem = (req, res) => {
   )
     .orFail()
     .then((item) => {
-      if (!item) {
-        return res.status(NOT_FOUND_ERROR).send({ message: "item Not Found" });
-      }
       res.status(200).send({ data: item });
     })
     .catch((err) => {
@@ -70,10 +65,12 @@ const likeClothingItem = (req, res) => {
         return res.status(NOT_FOUND_ERROR).send({ message: err.message });
       }
       if (err.name === "CastError") {
-        return res.status(BAD_REQUEST_ERROR).send({ message: err.message });
+        return res.status(BAD_REQUEST_ERROR).send({ message: "Invalid data" });
       }
       console.error(err);
-      return res.status(INTERNAL_SERVER_ERROR).send({ message: err.message });
+      return res
+        .status(INTERNAL_SERVER_ERROR)
+        .send({ message: "An error has occurred on the server." });
     });
 };
 
@@ -90,21 +87,20 @@ const unLikeClothingItem = (req, res) => {
   )
     .orFail()
     .then((item) => {
-      if (!item) {
-        return res.status(NOT_FOUND_ERROR).send({ message: "item Not Found" });
-      }
       res.status(200).send({ data: item });
     })
     .catch((err) => {
       console.error(err);
       if (err.name === "CastError") {
-        return res.status(BAD_REQUEST_ERROR).send({ message: err.message });
+        return res.status(BAD_REQUEST_ERROR).send({ message: "Invalid data" });
       }
       if (err.name === "DocumentNotFoundError") {
         return res.status(NOT_FOUND_ERROR).send({ message: err.message });
       }
 
-      return res.status(INTERNAL_SERVER_ERROR).send({ message: err.message });
+      return res
+        .status(INTERNAL_SERVER_ERROR)
+        .send({ message: "An error has occurred on the server." });
     });
 };
 
@@ -124,13 +120,13 @@ const deleteClothingItem = (req, res) => {
     })
     .catch((err) => {
       console.error(err);
-      if (err.name === "DocumentNotFoundError") {
-        res.status(NOT_FOUND_ERROR).send({ message: err.message });
-      }
+
       if (err.name == "CastError") {
-        return res.status(BAD_REQUEST_ERROR).send({ message: err.message });
+        return res.status(BAD_REQUEST_ERROR).send({ message: "Invalid data" });
       }
-      return res.status(INTERNAL_SERVER_ERROR).send({ message: err.message });
+      return res
+        .status(INTERNAL_SERVER_ERROR)
+        .send({ message: "An error has occurred on the server." });
     });
   // ClothingItem.exists({ _id: itemId }).then((itemExists) => {
   //   if (!itemExists) {
