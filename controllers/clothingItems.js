@@ -19,7 +19,7 @@ const createItem = (req, res) => {
       if (err.name === "ValidationError") {
         return res.status(BAD_REQUEST_ERROR).send({ message: "Invalid data" });
       }
-      res
+      return res
         .status(INTERNAL_SERVER_ERROR)
         .send({ message: "An error has occurred on the server." });
     });
@@ -121,7 +121,7 @@ const deleteClothingItem = (req, res) => {
     .catch((err) => {
       console.error(err);
 
-      if (err.name == "CastError") {
+      if (err.name === "CastError") {
         return res.status(BAD_REQUEST_ERROR).send({ message: "Invalid data" });
       }
       return res

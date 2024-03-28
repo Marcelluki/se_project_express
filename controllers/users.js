@@ -55,7 +55,7 @@ const getUser = (req, res) => {
     })
     .catch((err) => {
       console.error(err);
-      if (err.name == "CastError") {
+      if (err.name === "CastError") {
         return res.status(BAD_REQUEST_ERROR).send({ message: "Invalid data" });
       }
       return res
