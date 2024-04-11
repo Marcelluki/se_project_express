@@ -93,8 +93,9 @@ const getUser = (req, res) => {
 // Get Current User
 
 const getCurrentUser = (req, res) => {
-  const userData = req.user;
-  res.status(200).json(userData);
+  const { userData } = req.user._id;
+
+  res.status(200).send(userData);
 };
 
 // login
@@ -103,7 +104,7 @@ const login = (req, res) => {
   const { email, password } = req.body;
 
   // Find user by credentials using custom mongoose method
-  User.findUserByCredentials(email, password)
+  return User.findUserByCredentials(email, password)
     .then((user) => {
       if (!user) {
         return res.status(401).send({ message: "Invalid email or password" });
