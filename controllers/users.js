@@ -78,7 +78,7 @@ const getUser = (req, res) => {
         return res.status(NOT_FOUND_ERROR).send({ message: "User not Found" });
       }
 
-      return res.status(200).send(user);
+      return res.status(200).send({ message: "User Found" });
     })
     .catch((err) => {
       console.error(err);
@@ -92,10 +92,27 @@ const getUser = (req, res) => {
 };
 // Get Current User
 
-const getCurrentUser = (req, res) => {
-  const { userData } = req.user._id;
+// const getCurrentUser = (req, res) => {
+//   const userData = req.user._id;
 
-  res.status(200).send(userData);
+//   res.status(200).json(userData);
+// };
+const getCurrentUser = (req, res) => {
+  const userId = req.user._id;
+
+  // Find user by ID
+  User.findById(userId)
+    .then((userID) => {
+      if (!userID) {
+        return res.status(404).send({ message: "User not found" });
+      }
+      console.log(userId);
+      // User found, send response with user data
+      return res.status(200).json({ message: "User Found" });
+    })
+    .catch((error) => {
+      return res.status(500).send({ message: "Internal server error" });
+    });
 };
 
 // login
