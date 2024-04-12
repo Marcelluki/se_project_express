@@ -45,7 +45,7 @@ const createUser = (req, res) => {
       }
       User.create({ name, avatar, email, password: hashedPassword })
         .then((user) => {
-          res.status(201).send(user);
+          res.status(201).send({ name, avatar, email });
         })
         .catch((err) => {
           console.error(err);
@@ -103,7 +103,6 @@ const getCurrentUser = (req, res) => {
 const login = (req, res) => {
   const { email, password } = req.body;
 
-  // Find user by credentials using custom mongoose method
   return User.findUserByCredentials(email, password)
     .then((user) => {
       if (!user) {
