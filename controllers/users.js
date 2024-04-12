@@ -102,13 +102,13 @@ const getCurrentUser = (req, res) => {
 
   // Find user by ID
   User.findById(userId)
-    .then((userID) => {
-      if (!userID) {
+    .then((userId) => {
+      if (!userId) {
         return res.status(404).send({ message: "User not found" });
       }
       console.log(userId);
       // User found, send response with user data
-      return res.status(200).json({ message: "User Found" });
+      return res.status(200).send({ message: "User Found" });
     })
     .catch((error) => {
       return res.status(500).send({ message: "Internal server error" });
