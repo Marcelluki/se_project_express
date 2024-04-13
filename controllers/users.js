@@ -8,6 +8,7 @@ const {
   BAD_REQUEST_ERROR,
   NOT_FOUND_ERROR,
   CONFLICT_ERROR,
+  UNAUTHORIZED,
 } = require("../utils/errors");
 
 // GET /users
@@ -31,11 +32,8 @@ const createUser = (req, res) => {
   const { name, avatar, email, password } = req.body;
   User.findOne({ email }).then((existingUser) => {
     if (existingUser) {
-      return res
-        .status(CONFLICT_ERROR)
-        .send({ message: "User with this email already exists" });
+      // Throw block
     }
-
     bcrypt.hash(password, 10, (err, hashedPassword) => {
       if (err) {
         console.error(err);
@@ -47,9 +45,16 @@ const createUser = (req, res) => {
         .then((user) => {
           res.status(201).send({ name, avatar, email });
         })
+        // .catch((err) => {
+        //   console.error(err);
+        //   if (err.name === 11000) {
+        //     return res
+        //       .status(CONFLICT_ERROR)
+        //       .send({ message: "User with this email already exists" });
+        //   }
         .catch((err) => {
           console.error(err);
-          if (err.name === 11000) {
+          if (err.code === CONFLICT_ERROR) {
             return res
               .status(CONFLICT_ERROR)
               .send({ message: "User with this email already exists" });
@@ -108,9 +113,10 @@ const getCurrentUser = (req, res) => {
       }
       console.log(userId);
       // User found, send response with user data
-      return res.status(200).send({ message: "User Found" });
+      return res.status(200).send(userId);
     })
-    .catch((error) => {
+    .catch((err) => {
+      console.log(err);
       return res.status(500).send({ message: "Internal server error" });
     });
 };
@@ -135,7 +141,9 @@ const login = (req, res) => {
       res.status(200).send({ token });
     })
     .catch((err) => {
-      console.error(err);
+      if (err.message === "Incorrect email or password") {
+        return res.status(UNAUTHORIZED).send({ message: err.message });
+      }
       return res
         .status(500)
         .send({ message: "An error has occurred on the server" });
