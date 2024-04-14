@@ -2,7 +2,7 @@ const BAD_REQUEST_ERROR = 400;
 const FORBIDDEN_ERROR = 403;
 const NOT_FOUND_ERROR = 404;
 const INTERNAL_SERVER_ERROR = 500;
-const CONFLICT_ERROR = 11000;
+const CONFLICT_ERROR = 409;
 const UNAUTHORIZED = 401;
 
 module.exports = {

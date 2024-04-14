@@ -30,10 +30,12 @@ const getUsers = (req, res) => {
 
 const createUser = (req, res) => {
   const { name, avatar, email, password } = req.body;
-  User.findOne({ email }).then((existingUser) => {
-    if (existingUser) {
-      // Throw block
-    }
+  User.findOne({ email }).then(() => {
+    // if (existingUser) {
+    //   return res
+    //     .status(CONFLICT_ERROR)
+    //     .send({ message: "A user with this email already exists" });
+    // }
     bcrypt.hash(password, 10, (err, hashedPassword) => {
       if (err) {
         console.error(err);
@@ -43,7 +45,9 @@ const createUser = (req, res) => {
       }
       User.create({ name, avatar, email, password: hashedPassword })
         .then((user) => {
-          res.status(201).send({ name, avatar, email });
+          if (user) {
+            res.status(201).send({ name, avatar, email });
+          }
         })
         // .catch((err) => {
         //   console.error(err);
@@ -54,7 +58,7 @@ const createUser = (req, res) => {
         //   }
         .catch((err) => {
           console.error(err);
-          if (err.code === CONFLICT_ERROR) {
+          if (err.code === 11000) {
             return res
               .status(CONFLICT_ERROR)
               .send({ message: "User with this email already exists" });
@@ -113,7 +117,7 @@ const getCurrentUser = (req, res) => {
       }
       console.log(userId);
       // User found, send response with user data
-      return res.status(200).send(userId);
+      return res.status(200).send({ userId });
     })
     .catch((err) => {
       console.log(err);
