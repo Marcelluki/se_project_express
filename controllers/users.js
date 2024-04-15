@@ -9,6 +9,7 @@ const {
   NOT_FOUND_ERROR,
   CONFLICT_ERROR,
   UNAUTHORIZED,
+  FORBIDDEN_ERROR,
 } = require("../utils/errors");
 
 // GET /users
@@ -30,18 +31,18 @@ const getUsers = (req, res) => {
 
 const createUser = (req, res) => {
   const { name, avatar, email, password } = req.body;
-  User.findOne({ email }).then(() => {
-    // if (existingUser) {
-    //   return res
-    //     .status(CONFLICT_ERROR)
-    //     .send({ message: "A user with this email already exists" });
-    // }
+  User.findOne({ email }).then((existingUser) => {
+    if (existingUser) {
+      return res
+        .status(CONFLICT_ERROR)
+        .send({ message: "A user with this email already exists" });
+    }
     bcrypt.hash(password, 10, (err, hashedPassword) => {
       if (err) {
         console.error(err);
         return res
-          .status(INTERNAL_SERVER_ERROR)
-          .send({ message: "An error has occurred on the server." });
+          .status(UNAUTHORIZED)
+          .send({ message: "Invalid Credentials" });
       }
       User.create({ name, avatar, email, password: hashedPassword })
         .then((user) => {
@@ -145,8 +146,12 @@ const login = (req, res) => {
       res.status(200).send({ token });
     })
     .catch((err) => {
+      console.log(err);
       if (err.message === "Incorrect email or password") {
         return res.status(UNAUTHORIZED).send({ message: err.message });
+      }
+      if (err.code === 11000) {
+        return res.status(CONFLICT_ERROR).send({ message: "" });
       }
       return res
         .status(500)
@@ -156,26 +161,21 @@ const login = (req, res) => {
 // Update User Profile
 
 const updateUserProfile = (req, res) => {
-  const allowedFields = ["name", "avatar"];
-  const updates = Object.keys(req.body);
-  const isValidOperation = updates.every(
-    (update) => allowedFields.includes(update),
-    console.log(allowedFields),
-  );
-
-  if (!isValidOperation) {
-    return res.status(400).json({ error: "Invalid updates!" });
-  }
-
-  updates.forEach((update) => {
-    req.user[update] = req.body[update];
-  });
-
-  req.user
-    .save()
+  const userId = req.user._id;
+  const { name, avatar } = req.body;
+  User.findByIdAndUpdate(
+    userId,
+    { name, avatar },
+    { new: true, runValidators: true },
+  )
     .then((user) => {
-      res.status(200).json({ user });
+      if (user._id.toString() !== req.user._id) {
+        const error = FORBIDDEN_ERROR;
+        error.status = 403;
+        throw error;
+      }
     })
+    .then((user) => res.status(200).send({ data: user }))
     .catch((error) => {
       console.error(error);
       res.status(500).send({ error: "Server error" });
