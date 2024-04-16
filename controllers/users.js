@@ -31,6 +31,11 @@ const getUsers = (req, res) => {
 
 const createUser = (req, res) => {
   const { name, avatar, email, password } = req.body;
+
+  if (!email) {
+    return res.status(BAD_REQUEST_ERROR).send({ message: "Email is required" });
+  }
+
   User.findOne({ email }).then((existingUser) => {
     if (existingUser) {
       return res
@@ -122,7 +127,9 @@ const getCurrentUser = (req, res) => {
     })
     .catch((err) => {
       console.log(err);
-      return res.status(500).send({ message: "Internal server error" });
+      return res
+        .status(INTERNAL_SERVER_ERROR)
+        .send({ message: "Internal server error" });
     });
 };
 
@@ -131,6 +138,14 @@ const getCurrentUser = (req, res) => {
 const login = (req, res) => {
   const { email, password } = req.body;
 
+  if (!email) {
+    return res.status(BAD_REQUEST_ERROR).send({ message: "Email is required" });
+  }
+  if (!password) {
+    return res
+      .status(BAD_REQUEST_ERROR)
+      .send({ message: "Password is required" });
+  }
   return User.findUserByCredentials(email, password)
     .then((user) => {
       if (!user) {
@@ -153,8 +168,9 @@ const login = (req, res) => {
       if (err.code === 11000) {
         return res.status(CONFLICT_ERROR).send({ message: "" });
       }
+
       return res
-        .status(500)
+        .status(INTERNAL_SERVER_ERROR)
         .send({ message: "An error has occurred on the server" });
     });
 };
@@ -175,10 +191,12 @@ const updateUserProfile = (req, res) => {
         throw error;
       }
     })
-    .then((user) => res.status(200).send({ data: user }))
-    .catch((error) => {
-      console.error(error);
-      res.status(500).send({ error: "Server error" });
+    .then(() => {
+      res.status(200).send({ name, avatar });
+    })
+    .catch((err) => {
+      console.error(err);
+      res.status(INTERNAL_SERVER_ERROR).send({ error: "Server error" });
     });
 };
 

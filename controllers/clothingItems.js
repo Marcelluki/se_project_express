@@ -3,6 +3,7 @@ const {
   INTERNAL_SERVER_ERROR,
   BAD_REQUEST_ERROR,
   NOT_FOUND_ERROR,
+  FORBIDDEN_ERROR,
 } = require("../utils/errors");
 
 // Create Clothing Item
@@ -108,13 +109,18 @@ const unLikeClothingItem = (req, res) => {
 
 const deleteClothingItem = (req, res) => {
   const { itemId } = req.params;
-
+  const userId = req.user._id;
   console.log(itemId);
   ClothingItem.findByIdAndDelete(itemId)
     .then((item) => {
       if (!item) {
         // Item no longer exists in the database
         return res.status(NOT_FOUND_ERROR).send({ message: "Item not found" });
+      }
+      if (item.owner.toString() !== userId.toString()) {
+        return res.status(FORBIDDEN_ERROR).send({
+          message: "Cannot delete item added by another user",
+        });
       }
       return res.status(200).send(item);
     })
