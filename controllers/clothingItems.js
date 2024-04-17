@@ -30,13 +30,7 @@ const createItem = (req, res) => {
 
 const getClothingItems = (req, res) => {
   ClothingItem.find({})
-    .then((items) => {
-      // if (!items) {
-      //   // Item no longer exists in the database
-      //   return res.status(NOT_FOUND_ERROR).send({ message: "Item not found" });
-      // }
-      res.status(200).send(items);
-    })
+    .then((items) => res.status(200).send(items))
     .catch((err) => {
       console.error(err);
 
@@ -109,21 +103,6 @@ const unLikeClothingItem = (req, res) => {
 
 const deleteClothingItem = (req, res) => {
   const { itemId } = req.params;
-  const userId = req.user._id;
-  console.log(itemId);
-  // ClothingItem.findByIdAndDelete(itemId)
-  //   .then((item) => {
-  //     if (!item) {
-  //       // Item no longer exists in the database
-  //       return res.status(NOT_FOUND_ERROR).send({ message: "Item not found" });
-  //     }
-  //     if (item.owner.toString() !== userId.toString()) {
-  //       return res.status(FORBIDDEN_ERROR).send({
-  //         message: "Cannot delete item added by another user",
-  //       });
-  //     }
-  //     return res.status(200).send(item);
-  //   })
   ClothingItem.findById(itemId)
     .then((item) => {
       if (!item) {

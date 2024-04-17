@@ -13,7 +13,7 @@ const authorizationMiddleware = (req, res, next) => {
 
   const token = authorizationHeader.replace("Bearer ", "");
 
-  jwt.verify(token, JWT_SECRET, (err, payload) => {
+  return jwt.verify(token, JWT_SECRET, (err, payload) => {
     if (err) {
       return res
         .status(UNAUTHORIZED)
@@ -21,7 +21,7 @@ const authorizationMiddleware = (req, res, next) => {
     }
 
     req.user = payload;
-    next();
+    return next();
   });
 };
 

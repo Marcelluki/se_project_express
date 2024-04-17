@@ -1,6 +1,6 @@
-const User = require("../models/user");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const User = require("../models/user");
 const { JWT_SECRET } = require("../utils/config");
 
 const {
@@ -9,47 +9,7 @@ const {
   NOT_FOUND_ERROR,
   CONFLICT_ERROR,
   UNAUTHORIZED,
-  FORBIDDEN_ERROR,
 } = require("../utils/errors");
-
-// GET /users
-
-// const getUsers = (req, res) => {
-//   User.find({})
-//     .then((users) => {
-//       res.status(200).send(users);
-//     })
-//     .catch((err) => {
-//       console.error(err);
-//       return res
-//         .status(INTERNAL_SERVER_ERROR)
-//         .send({ message: "An error has occurred on the server." });
-//     });
-// };
-
-// Get user
-
-// const getUser = (req, res) => {
-//   const { userId } = req.params;
-
-//   User.findById(userId)
-//     .then((user) => {
-//       if (!user) {
-//         return res.status(NOT_FOUND_ERROR).send({ message: "User not Found" });
-//       }
-
-//       return res.status(200).send({ message: "User Found" });
-//     })
-//     .catch((err) => {
-//       console.error(err);
-//       if (err.name === "CastError") {
-//         return res.status(BAD_REQUEST_ERROR).send({ message: "Invalid data" });
-//       }
-//       return res
-//         .status(INTERNAL_SERVER_ERROR)
-//         .send({ message: "An error has occurred on the server." });
-//     });
-// };
 
 // Create User
 
@@ -60,65 +20,75 @@ const createUser = (req, res) => {
     return res.status(BAD_REQUEST_ERROR).send({ message: "Email is required" });
   }
 
-  User.findOne({ email }).then((existingUser) => {
+  return User.findOne({ email }).then((existingUser) => {
     if (existingUser) {
       return res
         .status(CONFLICT_ERROR)
         .send({ message: "A user with this email already exists" });
     }
-    bcrypt.hash(password, 10, (err, hashedPassword) => {
-      if (err) {
+
+    return bcrypt
+      .hash(password, 10)
+      .then((hashedPassword) =>
+        User.create({ name, avatar, email, password: hashedPassword }),
+      )
+      .then(() => res.status(201).send({ name, avatar, email }))
+      .catch((err) => {
         console.error(err);
+        if (err.code === 11000) {
+          return res
+            .status(CONFLICT_ERROR)
+            .send({ message: "User with this email already exists" });
+        }
+        if (err.name === "ValidationError") {
+          return res
+            .status(BAD_REQUEST_ERROR)
+            .send({ message: "Invalid data" });
+        }
         return res
           .status(INTERNAL_SERVER_ERROR)
-          .send({ message: "Invalid Credentials" });
-      }
-      User.create({ name, avatar, email, password: hashedPassword })
-        .then((user) => {
-          if (user) {
-            res.status(201).send({ name, avatar, email });
-          }
-        })
-        // .catch((err) => {
-        //   console.error(err);
-        //   if (err.name === 11000) {
-        //     return res
-        //       .status(CONFLICT_ERROR)
-        //       .send({ message: "User with this email already exists" });
-        //   }
-        .catch((err) => {
-          console.error(err);
-          if (err.code === 11000) {
-            return res
-              .status(CONFLICT_ERROR)
-              .send({ message: "User with this email already exists" });
-          }
-          if (err.name === "ValidationError") {
-            return res
-              .status(BAD_REQUEST_ERROR)
-              .send({ message: "Invalid data" });
-          }
-          return res
-            .status(INTERNAL_SERVER_ERROR)
-            .send({ message: "An error has occurred on the server." });
-        });
-    });
+          .send({ message: "An error has occurred on the server." });
+      });
   });
 };
+// bcrypt.hash(password, 10, (err, hashedPassword) => {
+//   if (err) {
+//     console.error(err);
+//     return res
+//       .status(INTERNAL_SERVER_ERROR)
+//       .send({ message: "Invalid Credentials" });
+//   }
+//   User.create({ name, avatar, email, password: hashedPassword })
+//     .then((user) => {
+//       if (user) {
+//         res.status(201).send({ name, avatar, email });
+//       }
+//     })
+//     .catch((err) => {
+//       console.error(err);
+//       if (err.code === 11000) {
+//         return res
+//           .status(CONFLICT_ERROR)
+//           .send({ message: "User with this email already exists" });
+//       }
+//       if (err.name === "ValidationError") {
+//         return res
+//           .status(BAD_REQUEST_ERROR)
+//           .send({ message: "Invalid data" });
+//       }
+//       return res
+//         .status(INTERNAL_SERVER_ERROR)
+//         .send({ message: "An error has occurred on the server." });
+//     });
+// });
 
 // GET User by ID
-
 // Get Current User
-
-// const getCurrentUser = (req, res) => {
-//   const userData = req.user._id;
-
-//   res.status(200).json(userData);
-// };
 const getCurrentUser = (req, res) => {
   const userId = req.user._id;
 
   // Find user by ID
+
   User.findById(userId)
     .then((userId) => {
       if (!userId) {
@@ -163,7 +133,7 @@ const login = (req, res) => {
       });
 
       // Send token in response
-      res.status(200).send({ token });
+      return res.status(200).send({ token });
     })
     .catch((err) => {
       console.log(err);
@@ -203,7 +173,7 @@ const updateUserProfile = (req, res) => {
           .status(BAD_REQUEST_ERROR)
           .send({ message: "Cannot update this user" });
       }
-      res.status(INTERNAL_SERVER_ERROR).send({ error: "Server error" });
+      return res.status(INTERNAL_SERVER_ERROR).send({ error: "Server error" });
     });
 };
 
