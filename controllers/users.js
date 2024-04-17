@@ -85,17 +85,12 @@ const createUser = (req, res) => {
 // GET User by ID
 // Get Current User
 const getCurrentUser = (req, res) => {
-  const userId = req.user._id;
-
   // Find user by ID
-
-  User.findById(userId)
+  User.findById(req.user._id)
     .then((userId) => {
       if (!userId) {
         return res.status(NOT_FOUND_ERROR).send({ message: "User not found" });
       }
-      console.log(userId);
-      // User found, send response with user data
       return res.status(200).send({ userId });
     })
     .catch((err) => {
