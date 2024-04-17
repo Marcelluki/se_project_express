@@ -14,18 +14,42 @@ const {
 
 // GET /users
 
-const getUsers = (req, res) => {
-  User.find({})
-    .then((users) => {
-      res.status(200).send(users);
-    })
-    .catch((err) => {
-      console.error(err);
-      return res
-        .status(INTERNAL_SERVER_ERROR)
-        .send({ message: "An error has occurred on the server." });
-    });
-};
+// const getUsers = (req, res) => {
+//   User.find({})
+//     .then((users) => {
+//       res.status(200).send(users);
+//     })
+//     .catch((err) => {
+//       console.error(err);
+//       return res
+//         .status(INTERNAL_SERVER_ERROR)
+//         .send({ message: "An error has occurred on the server." });
+//     });
+// };
+
+// Get user
+
+// const getUser = (req, res) => {
+//   const { userId } = req.params;
+
+//   User.findById(userId)
+//     .then((user) => {
+//       if (!user) {
+//         return res.status(NOT_FOUND_ERROR).send({ message: "User not Found" });
+//       }
+
+//       return res.status(200).send({ message: "User Found" });
+//     })
+//     .catch((err) => {
+//       console.error(err);
+//       if (err.name === "CastError") {
+//         return res.status(BAD_REQUEST_ERROR).send({ message: "Invalid data" });
+//       }
+//       return res
+//         .status(INTERNAL_SERVER_ERROR)
+//         .send({ message: "An error has occurred on the server." });
+//     });
+// };
 
 // Create User
 
@@ -46,7 +70,7 @@ const createUser = (req, res) => {
       if (err) {
         console.error(err);
         return res
-          .status(UNAUTHORIZED)
+          .status(INTERNAL_SERVER_ERROR)
           .send({ message: "Invalid Credentials" });
       }
       User.create({ name, avatar, email, password: hashedPassword })
@@ -84,27 +108,6 @@ const createUser = (req, res) => {
 
 // GET User by ID
 
-const getUser = (req, res) => {
-  const { userId } = req.params;
-
-  User.findById(userId)
-    .then((user) => {
-      if (!user) {
-        return res.status(NOT_FOUND_ERROR).send({ message: "User not Found" });
-      }
-
-      return res.status(200).send({ message: "User Found" });
-    })
-    .catch((err) => {
-      console.error(err);
-      if (err.name === "CastError") {
-        return res.status(BAD_REQUEST_ERROR).send({ message: "Invalid data" });
-      }
-      return res
-        .status(INTERNAL_SERVER_ERROR)
-        .send({ message: "An error has occurred on the server." });
-    });
-};
 // Get Current User
 
 // const getCurrentUser = (req, res) => {
@@ -119,7 +122,7 @@ const getCurrentUser = (req, res) => {
   User.findById(userId)
     .then((userId) => {
       if (!userId) {
-        return res.status(404).send({ message: "User not found" });
+        return res.status(NOT_FOUND_ERROR).send({ message: "User not found" });
       }
       console.log(userId);
       // User found, send response with user data
@@ -149,7 +152,9 @@ const login = (req, res) => {
   return User.findUserByCredentials(email, password)
     .then((user) => {
       if (!user) {
-        return res.status(401).send({ message: "Invalid email or password" });
+        return res
+          .status(UNAUTHORIZED)
+          .send({ message: "Invalid email or password" });
       }
 
       // Create JWT token
@@ -164,9 +169,6 @@ const login = (req, res) => {
       console.log(err);
       if (err.message === "Incorrect email or password") {
         return res.status(UNAUTHORIZED).send({ message: err.message });
-      }
-      if (err.code === 11000) {
-        return res.status(CONFLICT_ERROR).send({ message: "" });
       }
 
       return res
@@ -184,26 +186,29 @@ const updateUserProfile = (req, res) => {
     { name, avatar },
     { new: true, runValidators: true },
   )
-    .then((user) => {
-      if (user._id.toString() !== req.user._id) {
-        const error = FORBIDDEN_ERROR;
-        error.status = 403;
-        throw error;
-      }
-    })
+    // .then((user) => {
+    //   if (user._id.toString() !== req.user._id) {
+    //     const error = FORBIDDEN_ERROR;
+    //     error.status = 403;
+    //     throw error;
+    //   }
+    // })
     .then(() => {
       res.status(200).send({ name, avatar });
     })
     .catch((err) => {
       console.error(err);
+      if (err.name === "ValidationError") {
+        return res
+          .status(BAD_REQUEST_ERROR)
+          .send({ message: "Cannot update this user" });
+      }
       res.status(INTERNAL_SERVER_ERROR).send({ error: "Server error" });
     });
 };
 
 module.exports = {
-  getUsers,
   createUser,
-  getUser,
   login,
   getCurrentUser,
   updateUserProfile,
