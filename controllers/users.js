@@ -51,36 +51,6 @@ const createUser = (req, res) => {
       });
   });
 };
-// bcrypt.hash(password, 10, (err, hashedPassword) => {
-//   if (err) {
-//     console.error(err);
-//     return res
-//       .status(INTERNAL_SERVER_ERROR)
-//       .send({ message: "Invalid Credentials" });
-//   }
-//   User.create({ name, avatar, email, password: hashedPassword })
-//     .then((user) => {
-//       if (user) {
-//         res.status(201).send({ name, avatar, email });
-//       }
-//     })
-//     .catch((err) => {
-//       console.error(err);
-//       if (err.code === 11000) {
-//         return res
-//           .status(CONFLICT_ERROR)
-//           .send({ message: "User with this email already exists" });
-//       }
-//       if (err.name === "ValidationError") {
-//         return res
-//           .status(BAD_REQUEST_ERROR)
-//           .send({ message: "Invalid data" });
-//       }
-//       return res
-//         .status(INTERNAL_SERVER_ERROR)
-//         .send({ message: "An error has occurred on the server." });
-//     });
-// });
 
 // GET User by ID
 // Get Current User
@@ -128,7 +98,15 @@ const login = (req, res) => {
       });
 
       // Send token in response
-      return res.status(200).send({ token });
+      return res
+        .status(200)
+        .send({
+          token,
+          name: user.name,
+          avatar: user.avatar,
+          email: user.email,
+          _id: user._id,
+        });
     })
     .catch((err) => {
       console.log(err);
