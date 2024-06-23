@@ -49,7 +49,6 @@ module.exports = {
   BadRequestError,
   ForbiddenError,
   NotFoundError,
-  INTERNAL_SERVER_ERROR,
   ConflictError,
   UnauthorizedError,
 };

@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const mainRouter = require("./routes/index");
 const { errorHandler } = require("./middlewares/error-handler");
+const { errors } = require("celebrate");
 
 const app = express();
 const { PORT = 3001 } = process.env;
@@ -27,6 +28,8 @@ app.use("/", mainRouter);
 //   console.error(err);
 //   return res.status(500).send({ message: "An error occurred on the server" });
 // });
+app.use(errors());
+
 app.use(errorHandler);
 
 app.listen(PORT, () => {
