@@ -1,9 +1,11 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
+require("dotenv").config();
 const mainRouter = require("./routes/index");
 const { errorHandler } = require("./middlewares/error-handler");
 const { errors } = require("celebrate");
+const { errorLogger, requestLogger } = require("./middlewares/logger");
 
 const app = express();
 const { PORT = 3001 } = process.env;
@@ -22,12 +24,14 @@ app.use(express.json());
 //   next();
 // });
 app.use(cors());
+app.use(requestLogger);
 app.use("/", mainRouter);
 
 // app.use((err, req, res, next) => {
 //   console.error(err);
 //   return res.status(500).send({ message: "An error occurred on the server" });
 // });
+app.use(errorLogger);
 app.use(errors());
 
 app.use(errorHandler);
