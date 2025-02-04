@@ -3,17 +3,21 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/user");
 const { JWT_SECRET } = require("../utils/config");
 
-const {
-  // INTERNAL_SERVER_ERROR,
-  // BAD_REQUEST_ERROR,
-  // NOT_FOUND_ERROR,
-  // CONFLICT_ERROR,
-  // UNAUTHORIZED,
-  ConflictError,
-  BadRequestError,
-  NotFoundError,
-  UnauthorizedError,
-} = require("../utils/errors");
+// const {
+// INTERNAL_SERVER_ERROR,
+// BAD_REQUEST_ERROR,
+// NOT_FOUND_ERROR,
+// CONFLICT_ERROR,
+// UNAUTHORIZED,
+//   ConflictError,
+//   BadRequestError,
+//   NotFoundError,
+//   UnauthorizedError,
+// } = require("../utils/errors");
+const { ConflictError } = require("../errors/ConflictError");
+const { BadRequestError } = require("../errors/BadRequestError");
+const { NotFoundError } = require("../errors/NotFoundError");
+const { UnauthorizedError } = require("../errors/UnauthorizedError");
 
 // Create User
 
@@ -30,7 +34,7 @@ const createUser = (req, res, next) => {
       // return res
       //   .status(CONFLICT_ERROR)
       //   .send({ message: "A user with this email already exists" });
-      next(new ConflictError("A user with this email already exists"));
+      return next(new ConflictError("A user with this email already exists"));
     }
 
     return bcrypt

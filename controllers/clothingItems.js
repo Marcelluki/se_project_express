@@ -1,10 +1,7 @@
 const ClothingItem = require("../models/clothingItem");
-const {
-  // INTERNAL_SERVER_ERROR,
-  BadRequestError,
-  NotFoundError,
-  ForbiddenError,
-} = require("../utils/errors");
+const { BadRequestError } = require("../errors/BadRequestError");
+const { NotFoundError } = require("../errors/NotFoundError");
+const { ForbiddenError } = require("../errors/ForbiddenError");
 
 // Create Clothing Item
 
@@ -23,7 +20,6 @@ const createItem = (req, res, next) => {
       } else {
         next(err);
       }
-      // return res
       //   .status(INTERNAL_SERVER_ERROR)
       //   .send({ message: "An error has occurred on the server." });
     });
@@ -123,7 +119,9 @@ const deleteClothingItem = (req, res, next) => {
         // return res.status(FORBIDDEN_ERROR).send({
         //   message: "Cannot delete item added by another user",
         // });
-        next(new ForbiddenError("Cannot delete item added by another user"));
+        return next(
+          new ForbiddenError("Cannot delete item added by another user"),
+        );
       }
       return item.deleteOne().then(() => res.send({ message: "Item deleted" }));
     })
