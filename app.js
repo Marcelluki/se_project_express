@@ -4,12 +4,6 @@ const cors = require("cors");
 require("dotenv").config();
 const { errors } = require("celebrate");
 
-app.get("/crash-test", () => {
-  setTimeout(() => {
-    throw new Error("Server will crash now");
-  }, 0);
-});
-
 const mainRouter = require("./routes/index");
 const { errorHandler } = require("./middlewares/error-handler");
 const { errorLogger, requestLogger } = require("./middlewares/logger");
