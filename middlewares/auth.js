@@ -5,7 +5,7 @@ const { JWT_SECRET } = require("../utils/config");
 //   UnauthorizedError,
 // } = require("../utils/errors");
 
-const { UnauthorizedError } = require("../errors/UnauthorizedError");
+const UnauthorizedError = require("../errors/UnauthorizedError");
 
 const authorizationMiddleware = (req, res, next) => {
   const authorizationHeader = req.headers.authorization;
